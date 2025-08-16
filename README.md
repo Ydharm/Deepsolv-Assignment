@@ -4,7 +4,7 @@ This project provides insights from Shopify data using FastAPI, database integra
 
 ## Project Structure  
 
-![Project Structure](screenshots/structure.png)  
+![Project Structure](D:\down\Deepsolv Assignment\screenshorts\Structure.png)  
 
 ## How to Run  
 Run the 'requirements.txt' file.
@@ -14,8 +14,8 @@ Run the `main.py` file.
 ## Screenshots  
 
 ### Web Interface  
-![Web Interface](screenshots/output1.png)  
+![Web Interface](D:\down\Deepsolv Assignment\screenshorts\output1.png)  
 
 ### Analysis Results  
-![Analysis Results](screenshots/output2.png)  
-![API Response](screenshots/output3.png)  
+![Analysis Results](D:\down\Deepsolv Assignment\screenshorts\output2.png)  
+![API Response](D:\down\Deepsolv Assignment\screenshorts\output3.png)  
