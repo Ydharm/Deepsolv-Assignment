@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopify Store Insights Fetcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+
+        .brand-info {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .brand-name {
+            font-size: 2rem;
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .product-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .social-link {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .social-link:hover {
+            background: #45a049;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .faq-question {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .faq-answer {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #d32f2f;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .demo-links {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .demo-link {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 20px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .demo-link:hover {
+            background: #bbdefb;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛍️ Shopify Store Insights</h1>
+            <p>Analyze any Shopify store and get comprehensive business insights</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="form-group">
+                    <label for="websiteUrl">Enter Shopify Store URL:</label>
+                    <input type="url" id="websiteUrl" placeholder="https://memy.co.in" />
+                </div>
+                
+                <div class="demo-links">
+                    <strong>Try these demo stores:</strong><br>
+                    <a href="#" class="demo-link" onclick="setDemoUrl('https://memy.co.in')">memy.co.in</a>
+                    <a href="#" class="demo-link" onclick="setDemoUrl('https://hairoriginals.com')">hairoriginals.com</a>
+                    <a href="#" class="demo-link" onclick="setDemoUrl('https://colourpop.com')">colourpop.com</a>
+                </div>
+                
+                <button class="btn" onclick="analyzeStore()">🔍 Analyze Store</button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analyzing store... This may take a few moments</p>
+            </div>
+
+            <div class="error" id="error" style="display: none;"></div>
+
+            <div class="results" id="results">
+                <div class="brand-info" id="brandInfo">
+                    <!-- Brand info will be populated here -->
+                </div>
+
+                <div class="stats" id="stats">
+                    <!-- Stats will be populated here -->
+                </div>
+
+                <div class="section" id="productsSection">
+                    <div class="section-title">📦 Products</div>
+                    <div class="product-grid" id="products">
+                        <!-- Products will be populated here -->
+                    </div>
+                </div>
+
+                <div class="section" id="socialSection">
+                    <div class="section-title">📱 Social Media</div>
+                    <div class="social-links" id="socialLinks">
+                        <!-- Social links will be populated here -->
+                    </div>
+                </div>
+
+                <div class="section" id="faqSection">
+                    <div class="section-title">❓ FAQs</div>
+                    <div id="faqs">
+                        <!-- FAQs will be populated here -->
+                    </div>
+                </div>
+
+                <div class="section" id="contactSection">
+                    <div class="section-title">📞 Contact Information</div>
+                    <div id="contactInfo">
+                        <!-- Contact info will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setDemoUrl(url) {
+            document.getElementById('websiteUrl').value = url;
+        }
+
+        async function analyzeStore() {
+            const websiteUrl = document.getElementById('websiteUrl').value;
+            
+            if (!websiteUrl) {
+                alert('Please enter a website URL');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.querySelector('.btn').disabled = true;
+
+            try {
+                const response = await fetch('/insights', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        website_url: websiteUrl
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to analyze store');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.querySelector('.btn').disabled = false;
+            }
+        }
+
+        function displayResults(data) {
+            // Brand info
+            document.getElementById('brandInfo').innerHTML = `
+                <div class="brand-name">${data.brand_name || 'Unknown Brand'}</div>
+                <p><strong>Website:</strong> <a href="${data.website_url}" target="_blank">${data.website_url}</a></p>
+                ${data.about_brand ? `<p><strong>About:</strong> ${data.about_brand.substring(0, 200)}...</p>` : ''}
+            `;
+
+            // Stats
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-number">${data.products.length}</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${data.hero_products.length}</div>
+                    <div class="stat-label">Hero Products</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${data.social_links.length}</div>
+                    <div class="stat-label">Social Links</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">${data.faqs.length}</div>
+                    <div class="stat-label">FAQs</div>
+                </div>
+            `;
+
+            // Products
+            const productsHtml = data.products.slice(0, 6).map(product => `
+                <div class="product-card">
+                    ${product.image ? `<img src="${product.image}" alt="${product.title}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 10px;">` : ''}
+                    <h4>${product.title}</h4>
+                    <p><strong>${product.price}</strong></p>
+                </div>
+            `).join('');
+            document.getElementById('products').innerHTML = productsHtml || '<p>No products found</p>';
+
+            // Social Links
+            const socialHtml = data.social_links.map(social => `
+                <a href="${social.url}" target="_blank" class="social-link">
+                    ${social.platform}
+                </a>
+            `).join('');
+            document.getElementById('socialLinks').innerHTML = socialHtml || '<p>No social links found</p>';
+
+            // FAQs
+            const faqsHtml = data.faqs.map(faq => `
+                <div class="faq-item">
+                    <div class="faq-question">${faq.question}</div>
+                    <div class="faq-answer">${faq.answer}</div>
+                </div>
+            `).join('');
+            document.getElementById('faqs').innerHTML = faqsHtml || '<p>No FAQs found</p>';
+
+            // Contact Info
+            let contactHtml = '';
+            if (data.contact_info.emails && data.contact_info.emails.length > 0) {
+                contactHtml += `<p><strong>📧 Emails:</strong> ${data.contact_info.emails.join(', ')}</p>`;
+            }
+            if (data.contact_info.phones && data.contact_info.phones.length > 0) {
+                contactHtml += `<p><strong>📞 Phones:</strong> ${data.contact_info.phones.join(', ')}</p>`;
+            }
+            document.getElementById('contactInfo').innerHTML = contactHtml || '<p>No contact information found</p>';
+
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('error').innerHTML = `<strong>Error:</strong> ${message}`;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('websiteUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStore();
+            }
+        });
+    </script>
+</body>
+</html>
